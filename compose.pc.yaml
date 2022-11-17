@@ -1,0 +1,33 @@
+x-dds-configs:
+  - &simple_config { network_mode: host, ipc: host, configs: [ simple.xml ], env_file: dds/simple.env }
+
+configs: 
+  simple.xml: { file: dds/simple.xml }
+
+services:
+
+  rviz:
+    <<: *simple_config
+    image: husarion/rviz2:humble-22-11-17
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ./config/rosbot.rviz:/root/.rviz2/default.rviz
+    environment:
+      - DDS_PEER_1=${DDS_PEER_1:?err}
+      - DDS_PEER_2=${DDS_PEER_2:?err}
+      - DISPLAY=${DISPLAY:?err}
+      - LIBGL_ALWAYS_SOFTWARE=1
+
+  joy2twist:
+    <<: *simple_config
+    image: husarion/joy2twist:humble-22-11-17
+    devices:
+      - /dev/input
+    volumes: 
+      - ./config/joy2twist.yaml:/joy2twist.yaml
+    environment:
+      - DDS_PEER_1=${DDS_PEER_1:?err}
+      - DDS_PEER_2=${DDS_PEER_2:?err}
+    command: > 
+      ros2 launch joy2twist gamepad_controller.launch.py
+        joy2twist_params_file:=/joy2twist.yaml

@@ -1,0 +1,55 @@
+x-dds-configs:
+  - &simple_config
+    network_mode: host
+    ipc: host
+    configs:
+      - simple.xml
+    env_file: dds/simple.env
+
+configs: 
+  simple.xml: { file: dds/simple.xml }
+
+services:
+
+  rosbot:
+    <<: *simple_config
+    image: husarion/rosbot:humble-22-11-17
+    environment:
+      - DDS_PEER_1=${DDS_PEER_1:?err}
+      - DDS_PEER_2=${DDS_PEER_2:?err}
+    command: ros2 launch rosbot_bringup rosbot_bringup.launch.py
+  
+  microros:
+    <<: *simple_config
+    image: husarion/micro-ros-agent:humble-22-11-17
+    devices:
+      - ${SERIAL_PORT:?err}
+    environment:
+      - DDS_PEER_1=${DDS_PEER_1:?err}
+      - DDS_PEER_2=${DDS_PEER_2:?err}
+    command: serial -D $SERIAL_PORT serial -b 576000 # -v6
+
+  rplidar:
+    <<: *simple_config
+    image: husarion/rplidar:humble-22-11-17
+    devices:
+      - ${LIDAR_SERIAL:?err}:/dev/ttyUSB0
+    environment:
+      - DDS_PEER_1=${DDS_PEER_1:?err}
+      - DDS_PEER_2=${DDS_PEER_2:?err}
+    command: ros2 launch sllidar_ros2 sllidar_launch.py serial_baudrate:=${LIDAR_BAUDRATE:-115200}
+
+  mapping:
+    <<: *simple_config
+    image: husarion/slam-toolbox:humble-22-11-17
+    container_name: slam-toolbox
+    volumes:
+      - ./config/slam_toolbox_params.yaml:/slam_params.yaml
+      - ./maps:/maps
+    environment:
+      - DDS_PEER_1=${DDS_PEER_1:?err}
+      - DDS_PEER_2=${DDS_PEER_2:?err}
+    command: >
+      ros2 launch slam_toolbox online_sync_launch.py
+        slam_params_file:=/slam_params.yaml
+        use_sim_time:=${USE_SIM_TIME:-False}
