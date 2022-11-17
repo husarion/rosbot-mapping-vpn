@@ -6,6 +6,16 @@ configs:
 
 services:
 
+  map-saver:
+    <<: *simple_config
+    image: husarion/nav2-map-server:humble-22-11-17
+    volumes:
+      - ./maps:/maps
+    environment:
+      - DDS_PEER_1=${DDS_PEER_1:?err}
+      - DDS_PEER_2=${DDS_PEER_2:?err}
+    command: bash -c "while true; do ros2 run nav2_map_server map_saver_cli --free 0.15 --fmt png -f /maps/map; sleep 5; done"
+
   rviz:
     <<: *simple_config
     image: husarion/rviz2:humble-22-11-17
