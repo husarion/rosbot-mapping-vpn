@@ -1,5 +1,10 @@
 x-dds-configs:
-  - &simple_config { network_mode: host, ipc: host, configs: [ simple.xml ], env_file: dds/simple.env }
+  - &simple_config
+    network_mode: host
+    ipc: host
+    configs:
+      - simple.xml
+    env_file: dds/simple.env
 
 configs: 
   simple.xml: { file: dds/simple.xml }
