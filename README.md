@@ -6,6 +6,8 @@ Create a map of the unknow environment with ROSbot controlled over the Internet
 
 ROSbot and your laptop need to be in the same Husarnet network. 
 
+## PC
+
 Connect a gamepad to USB port of your PC/laptop. 
 
 Then create `.env` file 
@@ -14,17 +16,12 @@ Then create `.env` file
 cp .env.template .env
 ```
 
-check you LIDAR configs and paste [Husarnet VPN](https://husarnet.com/docs/manual-client/) hostnames of your ROSbot and laptop
+check you LIDAR configs:
 
 ```
 LIDAR_BAUDRATE=256000
 LIDAR_SERIAL=/dev/ttyUSB0
-DDS_PEER_1=husarnet-hostname-of-my-laptop
-DDS_PEER_2=husarnet-hostname-of-my-rosbot
-
 ```
-
-## PC
 
 Sync workspace with ROSbot
 
