@@ -1,48 +1,40 @@
-x-dds-configs:
-  - &simple_config
-    network_mode: host
-    ipc: host
-    configs:
-      - simple.xml
-    env_file: dds/simple.env
-
-configs: 
-  simple.xml: { file: dds/simple.xml }
-
 services:
 
   map-saver:
-    <<: *simple_config
-    image: husarion/nav2-map-server:humble-22-11-17
+    image: husarion/nav2-map-server:humble
+    network_mode: host
+    ipc: host
     volumes:
       - ./maps:/maps
     environment:
-      - DDS_PEER_1=${DDS_PEER_1:?err}
-      - DDS_PEER_2=${DDS_PEER_2:?err}
+      - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
+      - ROS_DISCOVERY_SERVER=rosbot2r
     command: bash -c "while true; do ros2 run nav2_map_server map_saver_cli --free 0.15 --fmt png -f /maps/map; sleep 5; done"
 
   rviz:
-    <<: *simple_config
-    image: husarion/rviz2:humble-22-11-17
+    image: husarion/rviz2:humble
+    network_mode: host
+    ipc: host
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ./config/rosbot.rviz:/root/.rviz2/default.rviz
     environment:
-      - DDS_PEER_1=${DDS_PEER_1:?err}
-      - DDS_PEER_2=${DDS_PEER_2:?err}
+      - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
+      - ROS_DISCOVERY_SERVER=rosbot2r
       - DISPLAY=${DISPLAY:?err}
       - LIBGL_ALWAYS_SOFTWARE=1
 
   joy2twist:
-    <<: *simple_config
-    image: husarion/joy2twist:humble-22-11-17
+    image: husarion/joy2twist:humble
+    network_mode: host
+    ipc: host
     devices:
       - /dev/input
     volumes: 
       - ./config/joy2twist.yaml:/joy2twist.yaml
     environment:
-      - DDS_PEER_1=${DDS_PEER_1:?err}
-      - DDS_PEER_2=${DDS_PEER_2:?err}
+      - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
+      - ROS_DISCOVERY_SERVER=rosbot2r
     command: > 
       ros2 launch joy2twist gamepad_controller.launch.py
         joy2twist_params_file:=/joy2twist.yaml

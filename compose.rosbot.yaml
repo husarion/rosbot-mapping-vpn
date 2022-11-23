@@ -1,52 +1,53 @@
-x-dds-configs:
-  - &simple_config
-    network_mode: host
-    ipc: host
-    configs:
-      - simple.xml
-    env_file: dds/simple.env
-
-configs: 
-  simple.xml: { file: dds/simple.xml }
-
 services:
 
-  rosbot:
-    <<: *simple_config
-    image: husarion/rosbot:humble-22-11-17
+  discovery-server:
+    image: husarnet/ros:humble-ros-core
+    network_mode: host
+    ipc: host
     environment:
-      - DDS_PEER_1=${DDS_PEER_1:?err}
-      - DDS_PEER_2=${DDS_PEER_2:?err}
+      - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
+    command: fast-discovery-server -x /dds-husarnet-ds.xml
+
+  rosbot:
+    image: husarion/rosbot:humble
+    network_mode: host
+    ipc: host
+    environment:
+      - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
+      - ROS_DISCOVERY_SERVER=rosbot2r
     command: ros2 launch rosbot_bringup rosbot_bringup.launch.py
   
   microros:
-    <<: *simple_config
-    image: husarion/micro-ros-agent:humble-22-11-17
+    image: husarion/micro-ros-agent:humble
+    network_mode: host
+    ipc: host
     devices:
       - ${SERIAL_PORT:?err}
     environment:
-      - DDS_PEER_1=${DDS_PEER_1:?err}
-      - DDS_PEER_2=${DDS_PEER_2:?err}
-    command: serial -D $SERIAL_PORT serial -b 576000 # -v6
+      - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
+      - ROS_DISCOVERY_SERVER=rosbot2r
+    command: ros2 run micro_ros_agent micro_ros_agent serial -D $SERIAL_PORT serial -b 576000 # -v6
 
   rplidar:
-    <<: *simple_config
-    image: husarion/rplidar:humble-22-11-17
+    image: husarion/rplidar:humble
+    network_mode: host
+    ipc: host
     devices:
       - ${LIDAR_SERIAL:?err}:/dev/ttyUSB0
     environment:
-      - DDS_PEER_1=${DDS_PEER_1:?err}
-      - DDS_PEER_2=${DDS_PEER_2:?err}
+      - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
+      - ROS_DISCOVERY_SERVER=rosbot2r
     command: ros2 launch sllidar_ros2 sllidar_launch.py serial_baudrate:=${LIDAR_BAUDRATE:-115200}
 
   mapping:
-    <<: *simple_config
-    image: husarion/slam-toolbox:humble-22-11-17
+    image: husarion/slam-toolbox:humble
+    network_mode: host
+    ipc: host
     volumes:
       - ./config/slam_toolbox_params.yaml:/slam_params.yaml
     environment:
-      - DDS_PEER_1=${DDS_PEER_1:?err}
-      - DDS_PEER_2=${DDS_PEER_2:?err}
+      - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
+      - ROS_DISCOVERY_SERVER=rosbot2r
     command: >
       ros2 launch slam_toolbox online_sync_launch.py
         slam_params_file:=/slam_params.yaml
