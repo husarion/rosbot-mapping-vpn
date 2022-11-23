@@ -1,29 +1,31 @@
 services:
 
   map-saver:
-    image: husarion/nav2-map-server:humble-husarnet
+    image: husarion/nav2-map-server:humble
     network_mode: host
     ipc: host
     volumes:
       - ./maps:/maps
     environment:
-      - DDS_CONFIG=HUSARNET_SIMPLE_AUTO
+      - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
+      - ROS_DISCOVERY_SERVER=rosbot2r
     command: bash -c "while true; do ros2 run nav2_map_server map_saver_cli --free 0.15 --fmt png -f /maps/map; sleep 5; done"
 
   rviz:
-    image: husarion/rviz2:humble-husarnet
+    image: husarion/rviz2:humble
     network_mode: host
     ipc: host
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ./config/rosbot.rviz:/root/.rviz2/default.rviz
     environment:
-      - DDS_CONFIG=HUSARNET_SIMPLE_AUTO
+      - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
+      - ROS_DISCOVERY_SERVER=rosbot2r
       - DISPLAY=${DISPLAY:?err}
       - LIBGL_ALWAYS_SOFTWARE=1
 
   joy2twist:
-    image: husarion/joy2twist:humble-husarnet
+    image: husarion/joy2twist:humble
     network_mode: host
     ipc: host
     devices:
@@ -31,7 +33,8 @@ services:
     volumes: 
       - ./config/joy2twist.yaml:/joy2twist.yaml
     environment:
-      - DDS_CONFIG=HUSARNET_SIMPLE_AUTO
+      - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
+      - ROS_DISCOVERY_SERVER=rosbot2r
     command: > 
       ros2 launch joy2twist gamepad_controller.launch.py
         joy2twist_params_file:=/joy2twist.yaml
