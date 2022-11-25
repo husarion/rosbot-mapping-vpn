@@ -1,5 +1,7 @@
 # rosbot-mapping-vpn
 
+> :warning: **This repo is deprecated**. Use [rosbot-mapping](https://github.com/husarion/rosbot-mapping) instead.
+
 Create a map of the unknow environment with ROSbot controlled over the Internet
 
 ## Quick Start
