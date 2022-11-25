@@ -1,7 +1,7 @@
 services:
 
   discovery-server:
-    image: husarnet/ros:humble-ros-core
+    image: husarnet/ros:humble-ros-core-0.1.0
     network_mode: host
     ipc: host
     environment:
@@ -9,45 +9,45 @@ services:
     command: fast-discovery-server -x /dds-husarnet-ds.xml
 
   rosbot:
-    image: husarion/rosbot:humble
+    image: husarion/rosbot:humble-22-11-25
     network_mode: host
     ipc: host
     environment:
       - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
-      - ROS_DISCOVERY_SERVER=rosbot2r
+      - ROS_DISCOVERY_SERVER=${ROSBOT_HOSTNAME}
     command: ros2 launch rosbot_bringup rosbot_bringup.launch.py
   
   microros:
-    image: husarion/micro-ros-agent:humble
+    image: husarion/micro-ros-agent:humble-22-11-25
     network_mode: host
     ipc: host
     devices:
       - ${SERIAL_PORT:?err}
     environment:
       - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
-      - ROS_DISCOVERY_SERVER=rosbot2r
+      - ROS_DISCOVERY_SERVER=${ROSBOT_HOSTNAME}
     command: ros2 run micro_ros_agent micro_ros_agent serial -D $SERIAL_PORT serial -b 576000 # -v6
 
   rplidar:
-    image: husarion/rplidar:humble
+    image: husarion/rplidar:humble-22-11-25
     network_mode: host
     ipc: host
     devices:
       - ${LIDAR_SERIAL:?err}:/dev/ttyUSB0
     environment:
       - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
-      - ROS_DISCOVERY_SERVER=rosbot2r
+      - ROS_DISCOVERY_SERVER=${ROSBOT_HOSTNAME}
     command: ros2 launch sllidar_ros2 sllidar_launch.py serial_baudrate:=${LIDAR_BAUDRATE:-115200}
 
   mapping:
-    image: husarion/slam-toolbox:humble
+    image: husarion/slam-toolbox:humble-22-11-25
     network_mode: host
     ipc: host
     volumes:
       - ./config/slam_toolbox_params.yaml:/slam_params.yaml
     environment:
       - DDS_CONFIG=HUSARNET_DISCOVERY_SERVER
-      - ROS_DISCOVERY_SERVER=rosbot2r
+      - ROS_DISCOVERY_SERVER=${ROSBOT_HOSTNAME}
     command: >
       ros2 launch slam_toolbox online_sync_launch.py
         slam_params_file:=/slam_params.yaml
